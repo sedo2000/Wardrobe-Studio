@@ -97,7 +97,7 @@ export default function Mannequin({ colors, garment, gender = 'male', onReady })
     scene.fog = new THREE.Fog('#11151d', 8, 18)
     const camera = new THREE.PerspectiveCamera(34, host.clientWidth / host.clientHeight, .1, 100)
     camera.position.set(4.8,2.6,7.8)
-    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true })
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, preserveDrawingBuffer:true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))
     renderer.setSize(host.clientWidth,host.clientHeight)
     renderer.shadowMap.enabled=true
