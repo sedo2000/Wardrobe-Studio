@@ -1,105 +1,60 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Shirt, Sparkles, RotateCcw, Save, Heart, Palette, Check, Copy, ChevronLeft, Layers3, Footprints, CircleHelp, X, Rotate3D, Share2 } from 'lucide-react'
+import React,{useEffect,useMemo,useRef,useState} from 'react'
+import {Shirt, Sparkles, RotateCcw, Save, Heart, Palette, Check, Copy, ChevronLeft, Layers3, Footprints, CircleHelp, X, Rotate3D, Share2, Download, Upload, Camera, UserRound, WandSparkles} from 'lucide-react'
 import Mannequin from './Mannequin.jsx'
 
-const initialColors={outer:'#202a38',inner:'#f4f1ea',pants:'#303b4b',shoes:'#e9e7e2'}
-const layers=[
-  {id:'outer',name:'القطعة الخارجية',sub:'جاكيت / هودي',ratio:'30%',icon:Layers3},
-  {id:'inner',name:'القطعة الداخلية',sub:'تيشيرت / قميص',ratio:'20%',icon:Shirt},
-  {id:'pants',name:'البنطال',sub:'جينز / قماش',ratio:'40%',icon:Layers3},
-  {id:'shoes',name:'الحذاء',sub:'سنيكرز / كاجوال',ratio:'10%',icon:Footprints}
-]
-const swatches=[
-  {name:'أسود',hex:'#17191d'},{name:'فحمي',hex:'#30343b'},{name:'كحلي',hex:'#17263e'},
-  {name:'رمادي',hex:'#9299a3'},{name:'أبيض',hex:'#f7f6f2'},{name:'سكري',hex:'#e9dfce'},
-  {name:'بيج',hex:'#c8ad8c'},{name:'جملي',hex:'#a96f43'},{name:'بني موكا',hex:'#604632'},
-  {name:'زيتي',hex:'#46513a'},{name:'أخضر داكن',hex:'#243b32'},{name:'أزرق جينز',hex:'#355d85'},
-  {name:'خمري',hex:'#642d3a'},{name:'طوبي',hex:'#a6533c'},{name:'أزرق فاتح',hex:'#9eb9cc'}
-]
-const presets=[
- {id:'campus',name:'جامعي يومي',tag:'CASUAL',desc:'مرتب ومريح للدوام',colors:{outer:'#202a38',inner:'#f4f1ea',pants:'#303b4b',shoes:'#e9e7e2'},garment:'jacket'},
- {id:'earth',name:'ترابي هادئ',tag:'EARTH TONES',desc:'درجات دافئة ومتناسقة',colors:{outer:'#604632',inner:'#e9dfce',pants:'#9a8877',shoes:'#f1eee7'},garment:'overshirt'},
- {id:'street',name:'ستريت وير',tag:'STREET',desc:'زيتي مع دنيم ولمسة دافئة',colors:{outer:'#46513a',inner:'#f3ead8',pants:'#243044',shoes:'#bd8957'},garment:'hoodie'},
- {id:'minimal',name:'مونوكروم',tag:'MINIMAL',desc:'أسود ورمادي بتباين نظيف',colors:{outer:'#24262b',inner:'#dededb',pants:'#17191d',shoes:'#f0eee8'},garment:'jacket'},
- {id:'old',name:'كلاسيك راقٍ',tag:'OLD MONEY',desc:'كحلي وسكري ولمسة جلدية',colors:{outer:'#17263e',inner:'#f2eee5',pants:'#c9c2b5',shoes:'#704a32'},garment:'overshirt'},
- {id:'summer',name:'صيفي فاتح',tag:'SUMMER',desc:'ألوان خفيفة ومنعشة',colors:{outer:'#c8ad8c',inner:'#f7f6f2',pants:'#9eb9cc',shoes:'#f7f6f2'},garment:'none'}
-]
-const garmentNames={jacket:'جاكيت مفتوح',hoodie:'هودي',overshirt:'قميص أوفرشيرت',none:'بدون قطعة خارجية'}
+const categories=[{id:'top',name:'القطعة العلوية',icon:Shirt},{id:'bottom',name:'البنطال',icon:Layers3},{id:'shoes',name:'الحذاء',icon:Footprints},{id:'outer',name:'الطبقة الخارجية',icon:Layers3},{id:'accessory',name:'الإكسسوارات',icon:Sparkles}]
+const catalog={
+ male:[
+  {id:'m1',cat:'top',name:'تيشيرت أبيض',brand:'Essential',img:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=85',color:'#eeeae2'},
+  {id:'m2',cat:'top',name:'قميص أسود',brand:'Urban',img:'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&q=85',color:'#242424'},
+  {id:'m3',cat:'bottom',name:'جينز أزرق',brand:'Denim',img:'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&q=85',color:'#3d5c7c'},
+  {id:'m4',cat:'shoes',name:'سنيكرز أبيض',brand:'Street',img:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=85',color:'#ddd8ce'},
+  {id:'m5',cat:'outer',name:'جاكيت دنيم',brand:'Classic',img:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&q=85',color:'#35536b'},
+  {id:'m6',cat:'outer',name:'جاكيت أسود',brand:'Minimal',img:'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=85',color:'#22252b'},
+  {id:'m7',cat:'shoes',name:'حذاء رياضي',brand:'Runner',img:'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=85',color:'#c7c5c0'},
+  {id:'m8',cat:'accessory',name:'ساعة معدنية',brand:'Detail',img:'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=85',color:'#a9a9a9'}
+ ],
+ female:[
+  {id:'f1',cat:'top',name:'بلوزة بيضاء',brand:'Essential',img:'https://images.unsplash.com/photo-1551163943-3f6a855d1153?w=600&q=85',color:'#eeeae2'},
+  {id:'f2',cat:'top',name:'توب أسود',brand:'Urban',img:'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=600&q=85',color:'#242424'},
+  {id:'f3',cat:'bottom',name:'جينز واسع',brand:'Denim',img:'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&q=85',color:'#3d5c7c'},
+  {id:'f4',cat:'shoes',name:'حذاء أبيض',brand:'Street',img:'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&q=85',color:'#ddd8ce'},
+  {id:'f5',cat:'outer',name:'جاكيت أنيق',brand:'Classic',img:'https://images.unsplash.com/photo-1548624149-f6f0b7b3a5b5?w=600&q=85',color:'#755c4b'},
+  {id:'f6',cat:'outer',name:'بليزر',brand:'Minimal',img:'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=85',color:'#22252b'},
+  {id:'f7',cat:'shoes',name:'كعب أنيق',brand:'Studio',img:'https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?w=600&q=85',color:'#b8a18c'},
+  {id:'f8',cat:'accessory',name:'حقيبة يد',brand:'Detail',img:'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=85',color:'#a77957'}
+ ]}
+const initial={top:'#eeeae2',bottom:'#3d5c7c',shoes:'#ddd8ce',outer:'#35536b',accessory:'#a9a9a9'}
 function App(){
- const [colors,setColors]=useState(()=>{try{return {...initialColors,...JSON.parse(localStorage.getItem('wardrobe-colors')||'{}')}}catch{return initialColors}})
- const [active,setActive]=useState('outer')
- const [garment,setGarment]=useState('jacket')
- const [preset,setPreset]=useState('campus')
- const [favorites,setFavorites]=useState(()=>JSON.parse(localStorage.getItem('wardrobe-favorites')||'[]'))
- const [saved,setSaved]=useState(false)
- const [toast,setToast]=useState('')
- const [tab,setTab]=useState('studio')
- const [viewer,setViewer]=useState(null)
- const [showAdvice,setShowAdvice]=useState(false)
-
- useEffect(()=>{localStorage.setItem('wardrobe-colors',JSON.stringify(colors))},[colors])
- useEffect(()=>{localStorage.setItem('wardrobe-favorites',JSON.stringify(favorites))},[favorites])
- useEffect(()=>{
-  const tg=window.Telegram?.WebApp
-  if(tg){tg.ready();tg.expand();tg.setHeaderColor?.('#0b0d12');tg.setBackgroundColor?.('#0b0d12')}
- },[])
- const notify=(s)=>{setToast(s);setTimeout(()=>setToast(''),2300);window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.('success')}
- const updateColor=(hex)=>{setColors(c=>({...c,[active]:hex}));setSaved(false);window.Telegram?.WebApp?.HapticFeedback?.selectionChanged?.()}
- const applyPreset=(p)=>{setColors(p.colors);setGarment(p.garment);setPreset(p.id);setActive('outer');setSaved(false);notify(`تم تطبيق ${p.name}`)}
- const current=layers.find(l=>l.id===active)
- const save=()=>{
-  const item={id:Date.now(),date:new Date().toLocaleDateString('ar-IQ'),colors,garment,preset:presets.find(p=>p.id===preset)?.name||'تنسيق مخصص'}
-  const next=[item,...favorites.filter(x=>JSON.stringify(x.colors)!==JSON.stringify(colors))].slice(0,30)
-  setFavorites(next);setSaved(true);notify('تم حفظ إطلالتك في المفضلة')
-  const tg=window.Telegram?.WebApp
-  if(tg?.initData){try{tg.sendData(JSON.stringify({event:'outfit_saved',...item}))}catch{}}
- }
- const randomize=()=>{const p=presets[Math.floor(Math.random()*presets.length)];applyPreset(p)}
- const copy=async()=>{const txt=`تنسيق Wardrobe Studio\nالقطعة الخارجية: ${colors.outer}\nالداخلية: ${colors.inner}\nالبنطال: ${colors.pants}\nالحذاء: ${colors.shoes}\n${garmentNames[garment]}`;try{await navigator.clipboard.writeText(txt);notify('تم نسخ تفاصيل التنسيق')}catch{notify('تعذر النسخ من هذا المتصفح')}}
- const toggleFavorite=()=>{const exists=favorites.some(x=>JSON.stringify(x.colors)===JSON.stringify(colors));if(exists){setFavorites(f=>f.filter(x=>JSON.stringify(x.colors)!==JSON.stringify(colors)));notify('تمت إزالة الإطلالة')}else save()}
- const share=async()=>{const text=`إطلالتي من Wardrobe Studio\n${Object.entries(colors).map(([k,v])=>`${layers.find(l=>l.id===k).name}: ${v}`).join('\n')}`;if(navigator.share){try{await navigator.share({title:'إطلالتي',text})}catch{}}else copy()}
- const selectSaved=(item)=>{setColors(item.colors);setGarment(item.garment);setTab('studio');notify('تم تحميل الإطلالة')}
+ const [gender,setGender]=useState(localStorage.getItem('ws-gender')||'')
+ const [colors,setColors]=useState(initial),[active,setActive]=useState('top'),[items,setItems]=useState({}),[uploads,setUploads]=useState({}),[tab,setTab]=useState('studio'),[favorites,setFavorites]=useState([]),[viewer,setViewer]=useState(null),[toast,setToast]=useState(''),[query,setQuery]=useState(''),[wheelHue,setWheelHue]=useState(35)
+ const fileRef=useRef(null),exportRef=useRef(null)
+ const [showHelp,setShowHelp]=useState(false)
+ useEffect(()=>{const tg=window.Telegram?.WebApp;if(tg){tg.ready();tg.expand();tg.setHeaderColor?.('#101116');tg.setBackgroundColor?.('#101116')}},[])
+ const notify=t=>{setToast(t);setTimeout(()=>setToast(''),2400)}
+ const selectedCategory=categories.find(x=>x.id===active)
+ const list=useMemo(()=>catalog[gender]||[],[gender])
+ const choose=item=>{setItems(v=>({...v,[item.cat]:item}));setColors(v=>({...v,[item.cat]:item.color}));notify('تمت إضافة القطعة إلى التنسيق')}
+ const upload=e=>{const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/'))return notify('اختر صورة بصيغة مدعومة');if(file.size>12*1024*1024)return notify('حجم الصورة يجب أن يكون أقل من 12MB');const url=URL.createObjectURL(file);setUploads(v=>({...v,[active]:{name:file.name,url}}));setItems(v=>({...v,[active]:{cat:active,name:file.name,img:url,color:colors[active],uploaded:true}}));notify('تمت إضافة صورتك إلى طبقة '+selectedCategory.name)}
+ const changeColor=h=>{setColors(v=>({...v,[active]:h}));setItems(v=>({...v,[active]:v[active]?{...v[active],color:h}:v[active]}))}
+ const exportLook=async()=>{const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=1500;const ctx=canvas.getContext('2d');const grad=ctx.createLinearGradient(0,0,1200,1500);grad.addColorStop(0,'#20242d');grad.addColorStop(1,'#101116');ctx.fillStyle=grad;ctx.fillRect(0,0,1200,1500);ctx.fillStyle='#f5f1e9';ctx.font='bold 46px sans-serif';ctx.fillText('WARDROBE STUDIO',70,90);ctx.font='28px sans-serif';ctx.fillStyle='#b5b7bf';ctx.fillText(gender==='male'?'MEN / LOOK':'WOMEN / LOOK',70,140);const model=document.querySelector('.mannequin-stage canvas');if(model){try{ctx.drawImage(model,100,180,1000,900)}catch{}}let y=1140;for(const c of categories){const it=items[c.id];ctx.fillStyle='#fff';ctx.font='24px sans-serif';ctx.fillText(c.name+' : '+(it?.name||'—'),70,y);ctx.fillStyle=colors[c.id]||'#555';ctx.fillRect(770,y-24,150,30);y+=58}ctx.fillStyle='#999';ctx.font='18px sans-serif';ctx.fillText('Created with Wardrobe Studio',70,1450);return new Promise(resolve=>canvas.toBlob(resolve,'image/png'))}
+ const download=async()=>{const blob=await exportLook();if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='wardrobe-look.png';a.click();URL.revokeObjectURL(url);notify('تم تنزيل صورة التنسيق')}
+ const share=async()=>{const blob=await exportLook();if(!blob)return;const file=new File([blob],'wardrobe-look.png',{type:'image/png'});try{if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file],title:'تنسيقي من Wardrobe Studio'});else{await download();notify('تم تنزيل الصورة، أرفقها في التطبيق الذي تريد المشاركة عبره')}}catch(e){if(e.name!=='AbortError')notify('تعذرت المشاركة من هذا المتصفح')}}
+ const save=()=>{setFavorites(v=>[{id:Date.now(),gender,colors:{...colors},items:{...items}},...v]);notify('تم حفظ التنسيق')}
+ if(!gender)return <div className="gender-gate"><div className="gate-brand"><span>W</span> WARDROBE <i>STUDIO</i></div><div className="gate-copy"><small>YOUR PERSONAL FASHION SPACE</small><h1>مرحباً بك في<br/><em>استوديو الأزياء</em></h1><p>اختر القسم الذي تريد استكشافه لنجهّز لك تجربة أزياء مخصصة.</p></div><div className="gender-options"><button onClick={()=>{setGender('male');localStorage.setItem('ws-gender','male')}}><img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?w=800&q=85"/><span>استوديو الرجال</span><small>MEN'S COLLECTION</small><b>دخول الاستوديو ↗</b></button><button onClick={()=>{setGender('female');localStorage.setItem('ws-gender','female')}}><img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=85"/><span>استوديو النساء</span><small>WOMEN'S COLLECTION</small><b>دخول الاستوديو ↗</b></button></div><p className="gate-foot">يمكنك تغيير القسم لاحقاً من إعدادات الاستوديو</p></div>
  return <div className="app-shell">
-  <header className="topbar">
-   <div className="brand-lockup"><div className="brand-mark"><Shirt size={19}/></div><div><div className="brand-name">WARDROBE<span>STUDIO</span></div><div className="brand-sub">مساحتك الخاصة لتنسيق الأزياء</div></div></div>
-   <button className="icon-btn" onClick={()=>setShowAdvice(true)} aria-label="مساعدة"><CircleHelp size={19}/></button>
-  </header>
-  <main className="main-content">
-   <section className="intro-row"><div><div className="eyebrow"><span className="eyebrow-line"/> PERSONAL STYLING LAB</div><h1>اصنع إطلالتك<br/><em>بأسلوبك الخاص.</em></h1><p>جرّب الألوان والطبقات على مانيكان ثلاثي الأبعاد.</p></div><button className="shuffle-btn" onClick={randomize}><Sparkles size={16}/> اقتراح ذكي</button></section>
-   <nav className="tabs">
-    <button className={tab==='studio'?'active':''} onClick={()=>setTab('studio')}><Palette size={16}/> الاستوديو</button>
-    <button className={tab==='looks'?'active':''} onClick={()=>setTab('looks')}><Heart size={16}/> إطلالاتي <span className="count">{favorites.length}</span></button>
-   </nav>
-   {tab==='studio'?<>
-    <section className="studio-grid">
-     <div className="viewer-card">
-      <div className="viewer-top"><div><span className="live-dot"/> LIVE PREVIEW</div><span className="viewer-sub">3D MANNEQUIN</span></div>
-      <Mannequin colors={colors} garment={garment} onReady={setViewer}/>
-      <div className="viewer-controls">
-       <button onClick={()=>viewer?.front()}><Rotate3D size={15}/> أمام</button><button onClick={()=>viewer?.back()}>خلف</button><button onClick={()=>viewer?.reset()}><RotateCcw size={14}/> إعادة</button>
-      </div>
-      <div className="garment-select"><span>نوع القطعة الخارجية</span><div className="garment-options">{Object.entries(garmentNames).map(([key,label])=><button key={key} className={garment===key?'selected':''} onClick={()=>{setGarment(key);setSaved(false)}}>{label}</button>)}</div></div>
-     </div>
-     <aside className="layers-panel">
-      <div className="section-heading"><div><span className="eyebrow">OUTFIT BUILDER</span><h2>طبقات الإطلالة</h2></div><span className="step-count">01 — 04</span></div>
-      <div className="layer-list">{layers.map((layer,i)=>{const Icon=layer.icon;return <button key={layer.id} onClick={()=>setActive(layer.id)} className={`layer-item ${active===layer.id?'selected':''}`}><span className="layer-index">0{i+1}</span><span className="layer-icon"><Icon size={17}/></span><span className="layer-info"><b>{layer.name}</b><small>{layer.sub}</small></span><span className="layer-color" style={{background:colors[layer.id]}}/><span className="layer-arrow"><ChevronLeft size={16}/></span></button>})}</div>
-      <div className="ratio-card"><div className="ratio-title"><span>توزيع الألوان</span><span>60 / 30 / 10</span></div><div className="ratio-bar"><i style={{width:'60%',background:colors.pants}}/><i style={{width:'30%',background:colors.outer}}/><i style={{width:'10%',background:colors.shoes}}/></div><div className="ratio-legend"><span><i style={{background:colors.pants}}/> أساسي</span><span><i style={{background:colors.outer}}/> ثانوي</span><span><i style={{background:colors.shoes}}/> لمسة</span></div></div>
-     </aside>
-    </section>
-    <section className="color-section">
-     <div className="section-heading color-heading"><div><span className="eyebrow">COLOR LAB</span><h2>اختَر لون {current.name}</h2></div><label className="custom-color"><input type="color" value={colors[active]} onChange={e=>updateColor(e.target.value)}/><span className="color-wheel"><Palette size={16}/></span> لون مخصص</label></div>
-     <div className="active-color-row"><div className="active-color-preview" style={{background:colors[active]}}/><div><b>{swatches.find(s=>s.hex.toLowerCase()===colors[active].toLowerCase())?.name||'لون مخصص'}</b><small>{colors[active].toUpperCase()}</small></div><span className="selected-label"><Check size={13}/> محدد الآن</span></div>
-     <div className="swatch-grid">{swatches.map(s=><button key={s.hex} className={`swatch ${colors[active].toLowerCase()===s.hex?'chosen':''}`} onClick={()=>updateColor(s.hex)} aria-label={s.name} title={s.name}><span style={{background:s.hex}}/>{colors[active].toLowerCase()===s.hex&&<Check size={14}/>}</button>)}</div>
-     <div className="swatch-caption">ألوان مختارة بعناية لتناسب الأزياء اليومية والستايل العصري.</div>
-    </section>
-    <section className="preset-section"><div className="section-heading"><div><span className="eyebrow">CURATED OUTFITS</span><h2>ابدأ من تنسيق جاهز</h2></div><span className="muted">6 إطلالات</span></div><div className="preset-grid">{presets.map(p=><button key={p.id} onClick={()=>applyPreset(p)} className={`preset-card ${preset===p.id?'preset-active':''}`}><div className="preset-colors">{Object.values(p.colors).map((c,i)=><i key={i} style={{background:c}}/>)}</div><div className="preset-tag">{p.tag}</div><b>{p.name}</b><small>{p.desc}</small>{preset===p.id&&<span className="preset-check"><Check size={12}/></span>}</button>)}</div></section>
-    <section className="tip-card"><div className="tip-icon"><Sparkles size={18}/></div><div><span className="eyebrow">STYLIST NOTE</span><b>لمسة منسّق الأزياء</b><p>{active==='shoes'?'اجعل الحذاء نقطة ربط بين لون القطعة الداخلية وأحد الألوان الثانوية، حتى تبدو الإطلالة متماسكة.':active==='pants'?'البنطال المحايد يمنحك مساحة أكبر للتجربة في الطبقات العلوية. جرّب الكحلي أو الفحمي كبداية.':active==='inner'?'القطعة الداخلية الفاتحة تخلق تبايناً أنيقاً تحت الجاكيت الداكن، بينما الألوان الترابية تمنحك طابعاً هادئاً.':'اختر قطعة خارجية بلون محايد، ثم أضف لوناً أفتح في الداخل ولمسة مختلفة في الحذاء.'}</p></div></section>
-    <div className="action-row"><button className="save-btn" onClick={save}><Save size={17}/>{saved?'تم حفظ الإطلالة':'حفظ الإطلالة'}</button><button className="round-action" onClick={toggleFavorite} aria-label="إضافة للمفضلة"><Heart size={18} fill={favorites.some(x=>JSON.stringify(x.colors)===JSON.stringify(colors))?'currentColor':'none'}/></button><button className="round-action" onClick={copy} aria-label="نسخ الألوان"><Copy size={17}/></button><button className="round-action" onClick={share} aria-label="مشاركة"><Share2 size={17}/></button></div>
-   </>:<section className="saved-section"><div className="section-heading"><div><span className="eyebrow">YOUR COLLECTION</span><h2>إطلالاتك المحفوظة</h2></div><span className="muted">{favorites.length} إطلالة</span></div>{favorites.length===0?<div className="empty-state"><div className="empty-icon"><Heart size={25}/></div><b>لا توجد إطلالات محفوظة بعد</b><p>صمّم إطلالتك الأولى ثم احفظها لتعود إليها لاحقاً.</p><button onClick={()=>setTab('studio')}>ابدأ التنسيق <ChevronLeft size={15}/></button></div>:<div className="saved-grid">{favorites.map(item=><article className="saved-card" key={item.id}><div className="saved-swatches">{Object.entries(item.colors).map(([k,v])=><i key={k} style={{background:v}}/>)}</div><div className="saved-meta"><b>{item.preset||'تنسيق مخصص'}</b><small>{item.date}</small></div><div className="saved-buttons"><button onClick={()=>selectSaved(item)}>استخدم التنسيق</button><button onClick={()=>setFavorites(f=>f.filter(x=>x.id!==item.id))}><X size={15}/></button></div></article>)}</div>}</section>}
-   <footer><span>WARDROBE STUDIO</span><span>DESIGNED FOR YOUR EVERYDAY STYLE</span></footer>
-  </main>
-  {showAdvice&&<div className="overlay" onClick={()=>setShowAdvice(false)}><div className="dialog" onClick={e=>e.stopPropagation()}><button className="dialog-close" onClick={()=>setShowAdvice(false)}><X size={18}/></button><div className="tip-icon"><CircleHelp size={19}/></div><h3>كيف تستخدم الاستوديو؟</h3><p>اختر طبقة من القائمة، ثم جرّب لوناً من لوحة الألوان. اسحب المانيكان لتدويره، واستخدم أزرار الأمام والخلف لمعاينة الإطلالة. يمكنك أيضاً تطبيق تنسيق جاهز وحفظ النتيجة في إطلالاتك.</p><small>ملاحظة: المانيكان الحالي مجسم ثلاثي الأبعاد قابل للتدوير، وليس صورة ثابتة.</small><button className="save-btn dialog-ok" onClick={()=>setShowAdvice(false)}>فهمت</button></div></div>}
-  {toast&&<div className="toast"><span/> {toast}</div>}
+ <header className="topbar"><button className="brand-lockup" onClick={()=>setTab('studio')}><span className="brand-mark">W</span><span><b>WARDROBE <i>STUDIO</i></b><small>THE DIGITAL FITTING ROOM</small></span></button><div className="top-actions"><button className="gender-switch" onClick={()=>{setGender('');setItems({});setUploads({})}}>{gender==='male'?'MEN':'WOMEN'} <ChevronLeft size={14}/></button><button className="icon-btn" onClick={()=>setShowHelp(true)}><CircleHelp size={18}/></button></div></header>
+ <main className="main-content">
+ <section className="hero"><div><span className="eyebrow">THE NEW WAY TO GET DRESSED</span><h1>نسّقها. جرّبها.<br/><em>عِش إطلالتك.</em></h1><p>استوديو افتراضي لتجربة القطع والألوان وبناء إطلالة متكاملة.</p></div><div className="hero-mark">WS<span>®</span></div></section>
+ <nav className="tabs"><button className={tab==='studio'?'active':''} onClick={()=>setTab('studio')}>الاستوديو</button><button className={tab==='looks'?'active':''} onClick={()=>setTab('looks')}>إطلالاتي <span>{favorites.length}</span></button></nav>
+ {tab==='studio'?<><section className="studio-grid"><div className="viewer-card"><div className="viewer-top"><span><i className="live-dot"/> LIVE FITTING ROOM</span><span>3D AVATAR · {gender.toUpperCase()}</span></div><Mannequin colors={colors} garment={items.outer?.name||'jacket'} gender={gender} onReady={setViewer}/><div className="viewer-controls"><button onClick={()=>viewer?.front()}><Rotate3D size={15}/> أمام</button><button onClick={()=>viewer?.back()}>خلف</button><button onClick={()=>viewer?.reset()}><RotateCcw size={14}/> إعادة</button></div><div className="preview-note">المجسم ثلاثي الأبعاد للمعاينة؛ صور القطع المختارة تظهر في لوحة التنسيق.</div></div>
+ <aside className="builder"><div className="section-heading"><div><span className="eyebrow">BUILD YOUR LOOK</span><h2>طبقات إطلالتك</h2></div><span className="muted">01 / 05</span></div>{categories.map(c=>{const Icon=c.icon;return <button key={c.id} className={'layer-item '+(active===c.id?'selected':'')} onClick={()=>setActive(c.id)}><span className="layer-icon"><Icon size={17}/></span><span className="layer-info"><b>{c.name}</b><small>{items[c.id]?.name||'لم يتم اختيار قطعة'}</small></span><i style={{background:colors[c.id]}}/><ChevronLeft size={16}/></button>})}<button className="upload-btn" onClick={()=>fileRef.current?.click()}><Upload size={17}/> ارفع صورة قطعة من جهازك</button><input ref={fileRef} hidden type="file" accept="image/*" onChange={upload}/>{uploads[active]&&<div className="upload-preview"><img src={uploads[active].url}/><span>{uploads[active].name}</span><button onClick={()=>{setUploads(v=>({...v,[active]:null}));setItems(v=>({...v,[active]:null}))}}><X size={15}/></button></div>}</aside></section>
+ <section className="catalog-section"><div className="section-heading"><div><span className="eyebrow">CURATED FOR YOU</span><h2>اكتشف القطع</h2></div><span className="muted">{gender==='male'?'MEN COLLECTION':'WOMEN COLLECTION'}</span></div><div className="category-pills">{categories.map(c=><button className={active===c.id?'chosen':''} key={c.id} onClick={()=>setActive(c.id)}>{c.name}</button>)}</div><div className="catalog-grid">{list.filter(x=>x.cat===active).map(item=><button key={item.id} className={'product-card '+(items[active]?.id===item.id?'picked':'')} onClick={()=>choose(item)}><div className="product-photo"><img src={item.img} loading="lazy"/>{items[active]?.id===item.id&&<span><Check size={16}/></span>}</div><small>{item.brand}</small><b>{item.name}</b><em>إضافة للتنسيق +</em></button>)}</div></section>
+ <section className="color-section"><div className="section-heading"><div><span className="eyebrow">COLOR ATELIER</span><h2>عجلة الألوان</h2></div><span className="muted">اختر درجة القطعة المحددة</span></div><div className="color-tools"><div className="color-wheel" onPointerDown={e=>{const r=e.currentTarget.getBoundingClientRect();const x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;const h=(Math.atan2(y,x)*180/Math.PI+360)%360;setWheelHue(h);changeColor('hsl('+h+' 65% 48%)')}}><div className="wheel-center"><span style={{background:colors[active]}}/></div></div><div className="color-info"><b>لون {selectedCategory.name}</b><p>اضغط على أي نقطة في عجلة الألوان لاختيار الدرجة، ثم شاهدها على المعاينة.</p><div className="chosen-color" style={{background:colors[active]}}/><input aria-label="درجة اللون" type="range" min="0" max="360" value={wheelHue} onChange={e=>{setWheelHue(+e.target.value);changeColor('hsl('+e.target.value+' 65% 48%)')}}/><small>درجة اللون المختارة</small></div></div></section>
+ <section className="final-look"><div><span className="eyebrow">YOUR FINAL LOOK</span><h2>إطلالتك، بطريقتك.</h2><p>احفظ التنسيق أو نزّل صورة له أو شاركه كصورة.</p></div><div className="final-items">{categories.map(c=><div key={c.id}>{items[c.id]?.img?<img src={items[c.id].img}/>:<span style={{background:colors[c.id]}}/>}<small>{c.name}</small></div>)}</div><div className="action-row"><button className="primary-btn" onClick={save}><Save size={17}/> حفظ التنسيق</button><button onClick={download}><Download size={17}/> تنزيل الصورة</button><button onClick={share}><Share2 size={17}/> مشاركة الصورة</button></div></section>
+ </>:<section className="saved-section"><div className="section-heading"><div><span className="eyebrow">YOUR COLLECTION</span><h2>إطلالاتي المحفوظة</h2></div></div>{favorites.length===0?<p className="empty-state">لا توجد تنسيقات محفوظة بعد.</p>:<div className="saved-grid">{favorites.map(f=><article key={f.id} className="saved-card"><b>{f.gender==='male'?'استوديو الرجال':'استوديو النساء'}</b><div className="saved-swatches">{Object.values(f.colors).map((c,i)=><i key={i} style={{background:c}}/>)}</div><button onClick={()=>{setColors(f.colors);setItems(f.items);setTab('studio')}}>فتح التنسيق</button></article>)}</div>}</section>}
+ <footer><span>WARDROBE STUDIO © 2026</span><span>STYLE IS PERSONAL.</span></footer></main>
+ {showHelp&&<div className="overlay" onClick={()=>setShowHelp(false)}><div className="dialog" onClick={e=>e.stopPropagation()}><button className="dialog-close" onClick={()=>setShowHelp(false)}><X/></button><h3>حول الاستوديو</h3><p>اختر القطع من الكتالوج أو ارفع صور ملابسك وأحذيتك، ثم نسّق ألوانها واحفظ الإطلالة أو صدّر بطاقة التنسيق كصورة. ملاحظة: المعاينة الحالية لا تنفذ محاكاة قياس واقعية للملابس على جسمك؛ هذه تحتاج خدمة Virtual Try-On متخصصة.</p><button className="primary-btn" onClick={()=>setShowHelp(false)}>حسناً</button></div></div>}{toast&&<div className="toast">{toast}</div>}
  </div>
 }
 export default App
