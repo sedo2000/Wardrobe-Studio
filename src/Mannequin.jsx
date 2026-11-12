@@ -14,7 +14,7 @@ function makeShape(points, depth, material, bevel = .08) {
   return new THREE.Mesh(geo, material)
 }
 
-function createMannequin(colors, garment) {
+function createMannequin(colors, garment, gender = 'male') {
   const group = new THREE.Group()
   const skin = mat('#c7b8a6', .88)
   const seam = mat('#17191f', .9)
@@ -23,6 +23,7 @@ function createMannequin(colors, garment) {
   const pants = mat(colors.pants, .86)
   const shoes = mat(colors.shoes, .58)
   const body = mat('#b8a995', .9)
+  const feminine = gender === 'female'
 
   const add = (geo, material, x, y, z, sx=1, sy=1, sz=1, target=group) => {
     const mesh = new THREE.Mesh(geo, material)
@@ -37,7 +38,7 @@ function createMannequin(colors, garment) {
 
   add(sphere, skin, 0, 3.16, 0, .34, .43, .31)
   add(new THREE.CylinderGeometry(.17,.19,.34,24), skin, 0,2.72,0)
-  add(new THREE.CapsuleGeometry(.42,.82,8,24), body, 0,2.08,0,1,1,.58)
+  add(new THREE.CapsuleGeometry(feminine ? .37 : .42,.82,8,24), body, 0,2.08,0,1,feminine ? 1.02 : 1,.58)
   add(sphere, body, -.48,2.42,0,.27,.25,.28); add(sphere, body, .48,2.42,0,.27,.25,.28)
   capsule(.13,.98,body,-.62,1.75,0,-.08); capsule(.13,.98,body,.62,1.75,0,.08)
   add(sphere, skin,-.68,1.12,0,.14,.18,.14); add(sphere, skin,.68,1.12,0,.14,.18,.14)
@@ -65,7 +66,7 @@ function createMannequin(colors, garment) {
     }
   }
 
-  add(new THREE.CylinderGeometry(.39,.36,.25,32), pants,0,1.31,0,1,.72, .72)
+  add(new THREE.CylinderGeometry(feminine ? .42 : .39,.36,.25,32), pants,0,1.31,0,1,feminine ? .78 : .72, .72)
   const legGeo = new THREE.CylinderGeometry(.155,.19,1.27,24)
   add(legGeo,pants,-.225,.66,0,1,1,.92); add(legGeo,pants,.225,.66,0,1,1,.92)
   const stitchMat = mat('#ffffff',1)
@@ -83,7 +84,7 @@ function createMannequin(colors, garment) {
   return group
 }
 
-export default function Mannequin({ colors, garment, onReady }) {
+export default function Mannequin({ colors, garment, gender = 'male', onReady }) {
   const mount = useRef(null)
   const sceneRef = useRef(null)
   const modelRef = useRef(null)
@@ -123,7 +124,7 @@ export default function Mannequin({ colors, garment, onReady }) {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.3,.012,8,96),mat('#344052'))
     ring.rotation.x=Math.PI/2; ring.position.y=-1.72; ring.scale.set(1.1,1,1); scene.add(ring)
 
-    const model=createMannequin(colors,garment)
+    const model=createMannequin(colors,garment,gender)
     scene.add(model); modelRef.current=model; sceneRef.current={scene,camera,renderer,controls}
     let raf
     const animate=()=>{raf=requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera)}
@@ -140,8 +141,8 @@ export default function Mannequin({ colors, garment, onReady }) {
     if(!old)return
     const previous=modelRef.current
     if(previous){old.scene.remove(previous);previous.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose())}})}
-    const next=createMannequin(colors,garment);old.scene.add(next);modelRef.current=next
-  },[colors.outer,colors.inner,colors.pants,colors.shoes,garment])
+    const next=createMannequin(colors,garment,gender);old.scene.add(next);modelRef.current=next
+  },[colors.outer,colors.inner,colors.pants,colors.shoes,garment,gender])
 
   return <div className="mannequin-stage" ref={mount} aria-label="عارض أزياء ثلاثي الأبعاد قابل للتدوير"><div className="stage-glow"/><div className="stage-label"><span className="live-dot"/> 3D FITTING ROOM</div><div className="stage-hint">اسحب للتدوير · قرّب بإصبعين</div></div>
 }
